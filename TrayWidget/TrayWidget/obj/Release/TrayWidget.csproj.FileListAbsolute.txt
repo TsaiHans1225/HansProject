@@ -1,0 +1,59 @@
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\bin\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\bin\Release\Newtonsoft.Json.dll
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\bin\Release\Newtonsoft.Json.xml
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\obj\Release\TrayWidget.csproj.AssemblyReference.cache
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\obj\Release\TrayWidget.csproj.CoreCompileInputs.cache
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\obj\Release\TrayWidget.csproj.Up2Date
+D:\Users\Evelyn_Chen\Downloads\TrayWidget (2)\TrayWidget\obj\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.dll
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.xml
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.AssemblyReference.cache
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.CoreCompileInputs.cache
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.Up2Date
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\obj\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\x86\leveldb.dll
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\x64\leveldb.dll
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\LevelDB.NET.dll
+D:\Users\Evelyn_Chen\Downloads\TrayWidget\TrayWidget\bin\Release\corgi.ico
+C:\Users\hans_tsai\TrayWidget\bin\Release\x86\leveldb.dll
+C:\Users\hans_tsai\TrayWidget\bin\Release\x64\leveldb.dll
+C:\Users\hans_tsai\TrayWidget\bin\Release\cat.ico
+C:\Users\hans_tsai\TrayWidget\bin\Release\TrayWidget.exe
+C:\Users\hans_tsai\TrayWidget\bin\Release\LevelDB.NET.dll
+C:\Users\hans_tsai\TrayWidget\bin\Release\Newtonsoft.Json.dll
+C:\Users\hans_tsai\TrayWidget\bin\Release\Newtonsoft.Json.xml
+C:\Users\hans_tsai\TrayWidget\obj\Release\TrayWidget.csproj.AssemblyReference.cache
+C:\Users\hans_tsai\TrayWidget\obj\Release\TrayWidget.csproj.CoreCompileInputs.cache
+C:\Users\hans_tsai\TrayWidget\obj\Release\TrayWidget.csproj.Up2Date
+C:\Users\hans_tsai\TrayWidget\obj\Release\TrayWidget.exe
+D:\TrayWidget\TrayWidget\bin\Release\cat.ico
+D:\TrayWidget\TrayWidget\bin\Release\x86\leveldb.dll
+D:\TrayWidget\TrayWidget\bin\Release\x64\leveldb.dll
+D:\TrayWidget\TrayWidget\bin\Release\TrayWidget.exe
+D:\TrayWidget\TrayWidget\bin\Release\BouncyCastle.Crypto.dll
+D:\TrayWidget\TrayWidget\bin\Release\LevelDB.NET.dll
+D:\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.dll
+D:\TrayWidget\TrayWidget\bin\Release\System.Data.SQLite.dll
+D:\TrayWidget\TrayWidget\bin\Release\BouncyCastle.Crypto.xml
+D:\TrayWidget\TrayWidget\bin\Release\System.Data.SQLite.xml
+D:\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.xml
+D:\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.AssemblyReference.cache
+D:\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.CoreCompileInputs.cache
+D:\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.Up2Date
+D:\TrayWidget\TrayWidget\obj\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\cat.ico
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\x86\leveldb.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\x64\leveldb.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\TrayWidget.exe
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\BouncyCastle.Crypto.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\LevelDB.NET.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\System.Data.SQLite.dll
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\BouncyCastle.Crypto.xml
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\System.Data.SQLite.xml
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\bin\Release\Newtonsoft.Json.xml
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.AssemblyReference.cache
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.CoreCompileInputs.cache
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\obj\Release\TrayWidget.csproj.Up2Date
+D:\Users\Evelyn_Chen\Desktop\柯基外掛\TrayWidget\TrayWidget\obj\Release\TrayWidget.exe
