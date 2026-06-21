@@ -1,0 +1,26 @@
+# ===== Visual Studio / C# build output =====
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.cache
+
+# ===== Visual Studio temp / upgrade logs =====
+*.tmp
+UpgradeLog*.tmp
+UpgradeLog*.htm
+_UpgradeReport_Files/
+
+# ===== NuGet packages (restored from packages.config) =====
+packages/
+*.nupkg
+
+# ===== WC2026 — translation / build scratch =====
+WC2026/_chunks/
+WC2026/clubs_distinct.json
+
+# ===== OS junk =====
+Thumbs.db
+desktop.ini
+.DS_Store
