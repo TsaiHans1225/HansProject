@@ -1,0 +1,150 @@
+{
+  "extName": {
+    "message": "Claude 用量喵喵"
+  },
+  "extDescription": {
+    "message": "追蹤 Claude 用量，不再意外撞到 rate limit。"
+  },
+
+  "popupTitle": {
+    "message": "Claude 用量"
+  },
+  "officialUsage": {
+    "message": "官方用量"
+  },
+  "realtimeTracking": {
+    "message": "即時追蹤"
+  },
+
+  "sessionUsage": {
+    "message": "5 小時區間"
+  },
+  "weeklyUsage": {
+    "message": "7 天用量"
+  },
+  "additionalUsage": {
+    "message": "額外用量"
+  },
+  "resetsIn": {
+    "message": "$TIME$ 後重置",
+    "placeholders": {
+      "TIME": { "content": "$1", "example": "2h 15m" }
+    }
+  },
+  "used": {
+    "message": "已使用"
+  },
+  "remaining": {
+    "message": "剩餘"
+  },
+  "of": {
+    "message": "/"
+  },
+  "unlimited": {
+    "message": "無限制"
+  },
+
+  "inputTokens": {
+    "message": "輸入 token"
+  },
+  "outputTokens": {
+    "message": "輸出 token"
+  },
+  "estimatedCost": {
+    "message": "預估費用"
+  },
+  "model": {
+    "message": "模型"
+  },
+  "lastConversation": {
+    "message": "上次對話"
+  },
+  "totalSession": {
+    "message": "本次合計"
+  },
+
+  "badgeStatusSafe": {
+    "message": "安全"
+  },
+  "badgeStatusWarning": {
+    "message": "注意"
+  },
+  "badgeStatusDanger": {
+    "message": "快滿了"
+  },
+  "badgeStatusCritical": {
+    "message": "即將用完"
+  },
+
+  "floatingBarTitle": {
+    "message": "Claude 用量"
+  },
+  "floatingBarCollapse": {
+    "message": "點擊收合"
+  },
+  "floatingBarExpand": {
+    "message": "點擊展開"
+  },
+
+  "settingsTitle": {
+    "message": "設定"
+  },
+  "refreshInterval": {
+    "message": "更新間隔"
+  },
+  "minutes": {
+    "message": "分鐘"
+  },
+  "showFloatingBar": {
+    "message": "顯示浮動狀態條"
+  },
+  "showBadge": {
+    "message": "顯示工具列徽章"
+  },
+
+  "errorNoSession": {
+    "message": "尚未登入 claude.ai"
+  },
+  "errorFetchFailed": {
+    "message": "無法取得用量資料"
+  },
+  "errorRetrying": {
+    "message": "重試中⋯"
+  },
+
+  "hours": {
+    "message": "時"
+  },
+  "mins": {
+    "message": "分"
+  },
+
+  "appTitle": { "message": "Claude 用量喵喵" },
+  "loading": { "message": "載入中..." },
+  "connecting": { "message": "正在連線..." },
+  "connected": { "message": "已連線" },
+  "connectedRaw": { "message": "已連線（原始資料）" },
+  "connError": { "message": "連線錯誤" },
+  "bgConnFailed": { "message": "無法連線至背景程式" },
+  "refreshTitle": { "message": "重新整理" },
+  "refreshing": { "message": "更新中..." },
+  "refreshFailed": { "message": "更新失敗" },
+  "notLoggedIn": { "message": "尚未登入" },
+  "conversations": { "message": "則對話" },
+  "estimate": { "message": "估算值" },
+  "hasOfficial": { "message": "官方數據" },
+  "resetCount": { "message": "重置計數" },
+  "resetCountTitle": { "message": "重置 Token 計數" },
+  "emptyMsg": { "message": "抓不到用量資料喵..." },
+  "emptyHint": { "message": "請先登入 claude.ai" },
+  "errorHint": { "message": "試著重新整理看看？" },
+  "notUpdated": { "message": "尚未更新" },
+  "autoRefresh": { "message": "每 5 分鐘自動刷新" },
+  "updatedAgo": { "message": "$1 前更新" },
+  "usageDisplayed": { "message": "已使用量" },
+  "seconds": { "message": "$1 秒" },
+  "alreadyReset": { "message": "已重置" },
+  "resetIn": { "message": "$1 後重置" },
+  "rawDataLabel": { "message": "原始資料" },
+  "rawDataHint": { "message": "API 格式可能已變更" }
+}

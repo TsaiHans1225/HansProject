@@ -659,7 +659,18 @@ namespace TrayWidget
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Google", "Chrome", "User Data");
 
-        private static readonly string ChromeProfile = "Profile 6";
+        /// <summary>列出所有含 Cookies 檔的 Chrome profile（Default + Profile N）</summary>
+        private static IEnumerable<string> EnumerateChromeProfiles()
+        {
+            if (!System.IO.Directory.Exists(ChromeUserData)) yield break;
+            foreach (var dir in System.IO.Directory.GetDirectories(ChromeUserData))
+            {
+                var name = System.IO.Path.GetFileName(dir);
+                if (name != "Default" && !name.StartsWith("Profile ")) continue;
+                var cookiePath = System.IO.Path.Combine(dir, "Network", "Cookies");
+                if (System.IO.File.Exists(cookiePath)) yield return name;
+            }
+        }
 
         /// <summary>取得 Chrome 的 AES-256-GCM 金鑰（DPAPI 解密）</summary>
         private static byte[] GetChromeAesKey()
@@ -697,18 +708,20 @@ namespace TrayWidget
             return Encoding.UTF8.GetString(plain, 0, end);
         }
 
-        /// <summary>從 Chrome Cookies SQLite 取得指定 domain 的所有 cookie</summary>
-        private static Dictionary<string, string> GetChromeCookies(string domain)
+        /// <summary>從 Chrome Cookies SQLite 取得指定 domain 的所有 cookie（指定 profile）</summary>
+        private static Dictionary<string, string> GetChromeCookies(string domain, string profile)
         {
             var cookies = new Dictionary<string, string>();
             var aesKey = GetChromeAesKey();
 
             var cookieDbPath = System.IO.Path.Combine(
-                ChromeUserData, ChromeProfile, "Network", "Cookies");
+                ChromeUserData, profile, "Network", "Cookies");
             if (!System.IO.File.Exists(cookieDbPath)) return cookies;
 
-            // 複製到暫存避免鎖定
-            var tmpDb = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "tw_chrome_cookies_tmp");
+            // 複製到暫存避免鎖定（每個 profile 用獨立暫存檔）
+            var tmpDb = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "tw_chrome_cookies_" + Math.Abs(profile.GetHashCode()));
             System.IO.File.Copy(cookieDbPath, tmpDb, true);
 
             try
@@ -756,12 +769,28 @@ namespace TrayWidget
             return cookies;
         }
 
-        /// <summary>直接呼叫 Claude API 取得用量</summary>
+        /// <summary>直接呼叫 Claude API 取得用量：掃所有 profile 的 cookie，哪個能成功就用哪個</summary>
         private async Task<bool> TryFetchClaudeUsageFromApi()
         {
-            var cookies = GetChromeCookies("claude.ai");
-            if (cookies.Count == 0) return false;
+            foreach (var profile in EnumerateChromeProfiles())
+            {
+                Dictionary<string, string> cookies;
+                try { cookies = GetChromeCookies("claude.ai", profile); }
+                catch { continue; }                 // 該 profile cookie 讀取失敗 → 換下一個
+                if (cookies.Count == 0) continue;    // 沒有 claude.ai cookie → 換下一個
 
+                try
+                {
+                    if (await TryFetchUsageWithCookies(cookies, profile)) return true;
+                }
+                catch { /* 403 / 解析失敗等 → 換下一個 profile */ }
+            }
+            return false;
+        }
+
+        /// <summary>用指定 profile 的 cookie 打一次 Claude API；成功才更新 UI 並回傳 true</summary>
+        private async Task<bool> TryFetchUsageWithCookies(Dictionary<string, string> cookies, string profile)
+        {
             var cookieHeader = string.Join("; ", cookies.Select(kv => kv.Key + "=" + kv.Value));
 
             // 1) 取得組織
@@ -811,7 +840,7 @@ namespace TrayWidget
                         sevenReset = FormatResetTime(sd["resets_at"]?.ToString());
                     }
 
-                    ApplyClaudeUsageUI(fiveHour, sevenDay, fiveReset, sevenReset, "API");
+                    ApplyClaudeUsageUI(fiveHour, sevenDay, fiveReset, sevenReset, "API (" + profile + ")");
                     return true;
                 }
             }

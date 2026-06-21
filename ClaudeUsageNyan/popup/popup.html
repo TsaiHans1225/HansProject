@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="popup.css">
+  <title>Claude 用量喵喵</title>
+</head>
+<body>
+  <div class="container">
+    <!-- 標題區 -->
+    <header class="header" role="banner">
+      <img class="mascot" src="../icons/icon128.png" alt="Claude 用量喵喵" width="40" height="40">
+      <div class="header-text">
+        <h1 data-i18n="appTitle">Claude 用量喵喵</h1>
+        <p class="subtitle" id="org-name" data-i18n="loading">載入中...</p>
+      </div>
+      <button class="refresh-btn" id="refresh-btn" data-i18n-title="refreshTitle" title="重新整理" aria-label="重新整理">
+        <span class="refresh-icon" aria-hidden="true">↻</span>
+      </button>
+    </header>
+
+    <!-- 狀態訊息 -->
+    <div class="status-bar" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="status-text" id="status-text" data-i18n="connecting">正在連線...</span>
+    </div>
+
+    <!-- 用量卡片區：官方用量 -->
+    <section id="official-section">
+      <div class="section-label" id="official-label" style="display: none;">
+        <span class="section-icon" aria-hidden="true">📡</span>
+        <span data-i18n="officialUsage">官方用量（每 5 分鐘更新）</span>
+      </div>
+      <div class="cards" id="cards-container" role="list"></div>
+    </section>
+
+    <!-- 用量卡片區：即時 Token 追蹤 -->
+    <section id="token-section-wrapper">
+      <div class="section-label" id="token-label" style="display: none;">
+        <span class="section-icon" aria-hidden="true">⚡</span>
+        <span data-i18n="realtimeTracking">即時 Token 追蹤</span>
+      </div>
+      <div class="token-section" id="token-section" style="display: none;">
+        <div class="token-stats">
+          <div class="token-stat-card mint">
+            <div class="token-stat-value" id="total-input">0</div>
+            <div class="token-stat-label" data-i18n="inputTokens">Input tokens</div>
+          </div>
+          <div class="token-stat-card lavender">
+            <div class="token-stat-value" id="total-output">0</div>
+            <div class="token-stat-label" data-i18n="outputTokens">Output tokens</div>
+          </div>
+          <div class="token-stat-card peach">
+            <div class="token-stat-value" id="total-cost">$0.00</div>
+            <div class="token-stat-label" data-i18n="estimatedCost">預估費用</div>
+          </div>
+        </div>
+        <div class="token-meta">
+          <span class="token-meta-item">
+            <span class="token-meta-icon" aria-hidden="true">🤖</span>
+            <span id="current-model">—</span>
+          </span>
+          <span class="token-meta-item">
+            <span class="token-meta-icon" aria-hidden="true">💬</span>
+            <span id="msg-count">0</span>
+            <span data-i18n="conversations" class="conversations-label">則對話</span>
+          </span>
+          <span class="token-meta-item tag" id="data-source-tag" style="display: none;" data-i18n="estimate">估算值</span>
+        </div>
+        <div class="token-recent" id="token-recent" role="list"></div>
+        <button class="reset-btn" id="reset-btn" data-i18n-title="resetCountTitle" title="重置 Token 計數" aria-label="重置 Token 計數">
+          <span data-i18n="resetCount">🗑️ 重置計數</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 無資料提示 -->
+    <div class="empty-state" id="empty-state" style="display: none;" role="alert">
+      <div class="empty-cat" aria-hidden="true">🐈</div>
+      <p data-i18n="emptyMsg">抓不到用量資料喵...</p>
+      <p class="empty-hint" data-i18n="emptyHint">請先登入 claude.ai</p>
+    </div>
+
+    <!-- 錯誤提示 -->
+    <div class="error-state" id="error-state" style="display: none;" role="alert">
+      <div class="error-cat" aria-hidden="true">🙀</div>
+      <p class="error-msg" id="error-msg"></p>
+      <p class="empty-hint" data-i18n="errorHint">試著重新整理看看？</p>
+    </div>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <span class="footer-text" id="next-refresh"></span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

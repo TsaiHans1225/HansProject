@@ -1,26 +1,63 @@
-# ===== Visual Studio / C# build output =====
+# =====================================================================
+#  HansProject — 統一 .gitignore（monorepo）
+#  子專案：TrayWidget (C#/.NET FW) / WC2026 (靜態網頁) /
+#          docker-mssql2019 (Docker) / ClaudeUsageNyan (Chrome 擴充)
+# =====================================================================
+
+# ===== Visual Studio / C# 建置產物（TrayWidget）=====
 [Bb]in/
 [Oo]bj/
 .vs/
 *.user
 *.suo
 *.cache
-
-# ===== Visual Studio temp / upgrade logs =====
 *.tmp
 UpgradeLog*.tmp
 UpgradeLog*.htm
 _UpgradeReport_Files/
 
-# ===== NuGet packages (restored from packages.config) =====
+# NuGet：由 packages.config 還原，不納入版控
 packages/
 *.nupkg
 
-# ===== WC2026 — translation / build scratch =====
+# ===== WC2026 — 翻譯 / 建置暫存 =====
 WC2026/_chunks/
 WC2026/clubs_distinct.json
 
-# ===== OS junk =====
+# ===== docker-mssql2019 — 備份大檔（含真實資料，勿入版控）=====
+docker-mssql2019/backup/data/
+docker-mssql2019/bcp/data/
+docker-mssql2019/copy-db/incoming/
+
+# ===== ClaudeUsageNyan — 發佈 / 打包暫存 =====
+ClaudeUsageNyan/PUBLISH_GUIDE.md
+ClaudeUsageNyan/claude-usage-cute.zip
+ClaudeUsageNyan/push-to-github.sh
+ClaudeUsageNyan/code--claude-usage-nyan-github-push-*.md
+
+# ===== 大型 / 二進位產物（全域）=====
+*.bak
+*.tar
+*.tar.gz
+*.dat
+
+# ===== 機密 / 本機覆寫（全域）=====
+.env
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ===== 套件 / 相依（全域）=====
+node_modules/
+
+# ===== 日誌 =====
+*.log
+
+# ===== 編輯器 =====
+.vscode/
+.idea/
+*.swp
+
+# ===== OS 垃圾 =====
 Thumbs.db
 desktop.ini
 .DS_Store

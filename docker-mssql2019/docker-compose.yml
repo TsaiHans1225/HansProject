@@ -1,0 +1,20 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: mssql-2019-dev
+    # -T272: 關閉 IDENTITY cache,避免容器重啟後 sysno 跳 1000/10000 (測試環境美觀,效能略降)
+    command: ["/opt/mssql/bin/sqlservr", "-T272"]
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourPassword123!
+      - MSSQL_PID=Developer
+      - MSSQL_COLLATION=Chinese_Taiwan_Stroke_CI_AS
+      - TZ=Asia/Taipei
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql2019-data:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  mssql2019-data:
