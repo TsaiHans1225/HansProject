@@ -52,6 +52,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\LevelDB.Standard.2.1.6.1\build\net4\LevelDB.Standard.targets" Condition="Exists('packages\LevelDB.Standard.2.1.6.1\build\net4\LevelDB.Standard.targets')" />
+  <!-- LevelDB.NET P/Invoke 需要 native leveldb.dll；NuGet 的 targets 在某些環境不會複製，這裡明確複製到輸出的 x64/x86 子目錄 -->
+  <Target Name="CopyLevelDbNative" AfterTargets="Build">
+    <Copy SourceFiles="packages\LevelDB.Standard.2.1.6.1\build\net4\x64\leveldb.dll" DestinationFiles="$(OutputPath)x64\leveldb.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="packages\LevelDB.Standard.2.1.6.1\build\net4\x86\leveldb.dll" DestinationFiles="$(OutputPath)x86\leveldb.dll" SkipUnchangedFiles="true" />
+  </Target>
   <Import Project="packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.118.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

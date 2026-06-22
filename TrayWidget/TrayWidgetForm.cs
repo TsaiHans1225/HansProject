@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -9,16 +8,12 @@ using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Modes;
-using Org.BouncyCastle.Crypto.Parameters;
 using Timer = System.Windows.Forms.Timer;
 
 namespace TrayWidget
@@ -86,8 +81,6 @@ namespace TrayWidget
 
         private Timer refreshTimer;
         private static readonly HttpClient httpClient = CreateHttpClient(useCookies: true);
-        // Claude API 要手動帶 Cookie header，UseCookies 必須關掉（.NET Framework 會吃掉手動設的 Cookie）
-        private static readonly HttpClient claudeHttpClient = CreateHttpClient(useCookies: false);
         private static readonly SemaphoreSlim refreshLock = new SemaphoreSlim(1, 1);
         private Panel forecastPanel;
 
@@ -652,199 +645,12 @@ namespace TrayWidget
         }
 
         // ══════════════════════════════════════
-        //  Claude 用量（直接 API → LevelDB 備援）
+        //  Claude 用量（讀 ClaudeUsageNyan 擴充寫入的 LevelDB）
         // ══════════════════════════════════════
 
         private static readonly string ChromeUserData = System.IO.Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Google", "Chrome", "User Data");
-
-        /// <summary>列出所有含 Cookies 檔的 Chrome profile（Default + Profile N）</summary>
-        private static IEnumerable<string> EnumerateChromeProfiles()
-        {
-            if (!System.IO.Directory.Exists(ChromeUserData)) yield break;
-            foreach (var dir in System.IO.Directory.GetDirectories(ChromeUserData))
-            {
-                var name = System.IO.Path.GetFileName(dir);
-                if (name != "Default" && !name.StartsWith("Profile ")) continue;
-                var cookiePath = System.IO.Path.Combine(dir, "Network", "Cookies");
-                if (System.IO.File.Exists(cookiePath)) yield return name;
-            }
-        }
-
-        /// <summary>取得 Chrome 的 AES-256-GCM 金鑰（DPAPI 解密）</summary>
-        private static byte[] GetChromeAesKey()
-        {
-            var localStatePath = System.IO.Path.Combine(ChromeUserData, "Local State");
-            var json = System.IO.File.ReadAllText(localStatePath);
-            var obj = JObject.Parse(json);
-            var encKeyB64 = obj["os_crypt"]["encrypted_key"].ToString();
-            var encKey = Convert.FromBase64String(encKeyB64);
-            // 去掉 "DPAPI" 前綴（5 bytes）
-            var keyBytes = new byte[encKey.Length - 5];
-            Array.Copy(encKey, 5, keyBytes, 0, keyBytes.Length);
-            return ProtectedData.Unprotect(keyBytes, null, DataProtectionScope.CurrentUser);
-        }
-
-        /// <summary>用 BouncyCastle AES-256-GCM 解密 Chrome cookie</summary>
-        private static string DecryptCookieValue(byte[] encrypted, byte[] aesKey)
-        {
-            if (encrypted == null || encrypted.Length < 3 + 12 + 16) return null;
-            // 前 3 bytes = "v10" 或 "v20"，接著 12 bytes nonce，其餘 = ciphertext + 16 bytes GCM tag
-            var nonce = new byte[12];
-            Array.Copy(encrypted, 3, nonce, 0, 12);
-            var ciphertextWithTag = new byte[encrypted.Length - 3 - 12];
-            Array.Copy(encrypted, 3 + 12, ciphertextWithTag, 0, ciphertextWithTag.Length);
-
-            var cipher = new GcmBlockCipher(new AesEngine());
-            cipher.Init(false, new AeadParameters(new KeyParameter(aesKey), 128, nonce));
-            var plain = new byte[cipher.GetOutputSize(ciphertextWithTag.Length)];
-            var len = cipher.ProcessBytes(ciphertextWithTag, 0, ciphertextWithTag.Length, plain, 0);
-            cipher.DoFinal(plain, len);
-
-            // 去掉尾端 null
-            int end = plain.Length;
-            while (end > 0 && plain[end - 1] == 0) end--;
-            return Encoding.UTF8.GetString(plain, 0, end);
-        }
-
-        /// <summary>從 Chrome Cookies SQLite 取得指定 domain 的所有 cookie（指定 profile）</summary>
-        private static Dictionary<string, string> GetChromeCookies(string domain, string profile)
-        {
-            var cookies = new Dictionary<string, string>();
-            var aesKey = GetChromeAesKey();
-
-            var cookieDbPath = System.IO.Path.Combine(
-                ChromeUserData, profile, "Network", "Cookies");
-            if (!System.IO.File.Exists(cookieDbPath)) return cookies;
-
-            // 複製到暫存避免鎖定（每個 profile 用獨立暫存檔）
-            var tmpDb = System.IO.Path.Combine(
-                System.IO.Path.GetTempPath(),
-                "tw_chrome_cookies_" + Math.Abs(profile.GetHashCode()));
-            System.IO.File.Copy(cookieDbPath, tmpDb, true);
-
-            try
-            {
-                using (var conn = new SQLiteConnection(string.Format("Data Source={0};Version=3;Read Only=True;", tmpDb)))
-                {
-                    conn.Open();
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.CommandText = "SELECT name, encrypted_value FROM cookies WHERE host_key LIKE @domain";
-                        cmd.Parameters.AddWithValue("@domain", "%" + domain + "%");
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var name = reader.GetString(0);
-                                var encValue = (byte[])reader[1];
-                                if (encValue != null && encValue.Length > 0)
-                                {
-                                    try
-                                    {
-                                        string value;
-                                        // v10/v20 prefix → AES-GCM，否則 DPAPI 直接解
-                                        if (encValue.Length >= 3 && encValue[0] == 'v' && encValue[1] == '1')
-                                            value = DecryptCookieValue(encValue, aesKey);
-                                        else
-                                            value = Encoding.UTF8.GetString(
-                                                ProtectedData.Unprotect(encValue, null, DataProtectionScope.CurrentUser));
-
-                                        if (!string.IsNullOrEmpty(value))
-                                            cookies[name] = value;
-                                    }
-                                    catch { /* 單一 cookie 解密失敗就跳過 */ }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                try { System.IO.File.Delete(tmpDb); } catch { }
-            }
-
-            return cookies;
-        }
-
-        /// <summary>直接呼叫 Claude API 取得用量：掃所有 profile 的 cookie，哪個能成功就用哪個</summary>
-        private async Task<bool> TryFetchClaudeUsageFromApi()
-        {
-            foreach (var profile in EnumerateChromeProfiles())
-            {
-                Dictionary<string, string> cookies;
-                try { cookies = GetChromeCookies("claude.ai", profile); }
-                catch { continue; }                 // 該 profile cookie 讀取失敗 → 換下一個
-                if (cookies.Count == 0) continue;    // 沒有 claude.ai cookie → 換下一個
-
-                try
-                {
-                    if (await TryFetchUsageWithCookies(cookies, profile)) return true;
-                }
-                catch { /* 403 / 解析失敗等 → 換下一個 profile */ }
-            }
-            return false;
-        }
-
-        /// <summary>用指定 profile 的 cookie 打一次 Claude API；成功才更新 UI 並回傳 true</summary>
-        private async Task<bool> TryFetchUsageWithCookies(Dictionary<string, string> cookies, string profile)
-        {
-            var cookieHeader = string.Join("; ", cookies.Select(kv => kv.Key + "=" + kv.Value));
-
-            // 1) 取得組織
-            using (var req = new HttpRequestMessage(HttpMethod.Get, "https://claude.ai/api/organizations"))
-            {
-                req.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
-                var resp = await claudeHttpClient.SendAsync(req);
-                if (!resp.IsSuccessStatusCode) return false;
-
-                var orgJson = await resp.Content.ReadAsStringAsync();
-                var orgs = JArray.Parse(orgJson);
-                if (orgs.Count == 0) return false;
-                var orgId = orgs[0]["uuid"]?.ToString();
-                if (string.IsNullOrEmpty(orgId)) return false;
-
-                // 2) 取得用量
-                using (var uReq = new HttpRequestMessage(HttpMethod.Get,
-                    string.Format("https://claude.ai/api/organizations/{0}/usage", orgId)))
-                {
-                    uReq.Headers.TryAddWithoutValidation("Cookie", cookieHeader);
-                    var uResp = await claudeHttpClient.SendAsync(uReq);
-                    if (!uResp.IsSuccessStatusCode) return false;
-
-                    var usageJson = await uResp.Content.ReadAsStringAsync();
-                    var usage = JObject.Parse(usageJson);
-
-                    int fiveHour = 0, sevenDay = 0;
-                    string fiveReset = "", sevenReset = "";
-
-                    // 解析 five_hour（Claude API 的 utilization 就是整數百分比 0-100）
-                    var fh = usage["five_hour"];
-                    if (fh != null)
-                    {
-                        var util = fh["utilization"];
-                        if (util != null && util.Type != JTokenType.Null)
-                            fiveHour = (int)Math.Round((double)util);
-                        fiveReset = FormatResetTime(fh["resets_at"]?.ToString());
-                    }
-
-                    // 解析 seven_day
-                    var sd = usage["seven_day"];
-                    if (sd != null)
-                    {
-                        var util = sd["utilization"];
-                        if (util != null && util.Type != JTokenType.Null)
-                            sevenDay = (int)Math.Round((double)util);
-                        sevenReset = FormatResetTime(sd["resets_at"]?.ToString());
-                    }
-
-                    ApplyClaudeUsageUI(fiveHour, sevenDay, fiveReset, sevenReset, "API (" + profile + ")");
-                    return true;
-                }
-            }
-        }
 
         /// <summary>格式化重置時間</summary>
         private static string FormatResetTime(string resetIso)
@@ -877,19 +683,13 @@ namespace TrayWidget
             });
         }
 
-        /// <summary>主方法：API 優先 → LevelDB 備援</summary>
+        /// <summary>主方法：直接讀 ClaudeUsageNyan 擴充的 LevelDB（不打 API）</summary>
+        // 註：claude.ai 的 /api/organizations 受 Cloudflare bot challenge 保護
+        //（回應 cf-mitigated: challenge → 403），純 HttpClient 帶 cookie 也過不了，
+        // 所以一律改讀擴充功能（在真實瀏覽器內抓到後寫進 chrome.storage.local）的資料。
         private async Task FetchClaudeUsage()
         {
-            string apiErr = null;
-            try
-            {
-                if (await TryFetchClaudeUsageFromApi()) return;
-                apiErr = "API 回應非 200（cookie 可能失效，請重新登入 claude.ai）";
-            }
-            catch (Exception ex) { apiErr = "API: " + ex.Message; }
-
-            // 備援：讀取 Chrome 擴充功能 LevelDB
-            await Task.Run(() => FetchClaudeUsageFromLevelDB(apiErr));
+            await Task.Run(() => FetchClaudeUsageFromLevelDB());
         }
 
         /// <summary>掃所有 Profile 下所有擴充 settings，找含 usageData 且 lastUpdated 最新的那個</summary>
@@ -918,7 +718,10 @@ namespace TrayWidget
                     try { obj = JObject.Parse(raw); } catch { continue; }
                     if (obj["tiers"] == null) continue;
 
-                    long ts = obj["lastUpdated"]?.Type == JTokenType.Integer ? (long)obj["lastUpdated"] : 0;
+                    // 擴充以 JS Date.now() 寫入，常是科學記號浮點數（例 1.77e+12），不是整數
+                    var luTok = obj["lastUpdated"];
+                    long ts = (luTok != null && (luTok.Type == JTokenType.Integer || luTok.Type == JTokenType.Float))
+                        ? (long)(double)luTok : 0;
                     if (ts > bestTs) { bestTs = ts; best = obj; bestExt = extId; bestProfile = profileName; }
                 }
             }
@@ -955,16 +758,17 @@ namespace TrayWidget
             }
         }
 
-        /// <summary>從 LevelDB 讀取擴充功能資料（需要 Chrome 開啟時更新過）</summary>
-        private void FetchClaudeUsageFromLevelDB(string apiErr = null)
+        /// <summary>從 LevelDB 讀取 ClaudeUsageNyan 擴充寫入的用量
+        /// （擴充需在開著且已登入 claude.ai 的瀏覽器 profile 內抓過，才會有資料）</summary>
+        private void FetchClaudeUsageFromLevelDB()
         {
             try
             {
                 var found = FindFreshestUsageFromLevelDB();
                 if (found.usage == null)
                 {
-                    var hint = apiErr != null ? apiErr : "找不到 ClaudeUsageNyan 擴充的 usageData";
-                    SafeInvoke(() => lblClaudeSession.Text = "用量讀取失敗：" + hint);
+                    SafeInvoke(() => lblClaudeSession.Text =
+                        "用量讀取失敗：找不到 ClaudeUsageNyan 用量資料（請在已登入 claude.ai 的 Chrome 開啟擴充並更新一次）");
                     return;
                 }
 
@@ -985,13 +789,22 @@ namespace TrayWidget
                     if (type == "seven_day") { sevenDay = p; sevenReset = resetStr; }
                 }
 
-                ApplyClaudeUsageUI(fiveHour, sevenDay, fiveReset, sevenReset,
-                    "LevelDB " + found.profile + "/" + found.extId.Substring(0, 6));
+                // 資料新舊：擴充以 Date.now()(毫秒)寫入 lastUpdated
+                string source = "LevelDB " + found.profile + "/" + found.extId.Substring(0, 6);
+                var lu = found.usage["lastUpdated"];
+                if (lu != null && lu.Type != JTokenType.Null)
+                {
+                    var updated = DateTimeOffset.FromUnixTimeMilliseconds((long)(double)lu).ToLocalTime();
+                    var age = DateTimeOffset.Now - updated;
+                    if (age.TotalHours >= 12)
+                        source += string.Format("（資料已過時：{0:M/d HH:mm}）", updated.DateTime);
+                }
+
+                ApplyClaudeUsageUI(fiveHour, sevenDay, fiveReset, sevenReset, source);
             }
             catch (Exception ex)
             {
-                var hint = apiErr != null ? apiErr : ex.Message;
-                SafeInvoke(() => lblClaudeSession.Text = "用量讀取失敗：" + hint);
+                SafeInvoke(() => lblClaudeSession.Text = "用量讀取失敗：" + ex.Message);
             }
         }
 
