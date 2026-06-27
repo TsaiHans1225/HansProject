@@ -34,6 +34,20 @@
   .legend{margin:0 0 12px; font-size:.82rem; color:var(--muted);}
   .legend span{margin-right:12px;}
 
+  /* 戰鬥力說明 */
+  .formula{margin:0 0 16px; background:var(--card); border:1px solid var(--line); border-radius:10px; font-size:.85rem;}
+  .formula summary{cursor:pointer; padding:9px 14px; color:var(--gold); font-weight:700; list-style:none;}
+  .formula summary::-webkit-details-marker{display:none;}
+  .formula summary::before{content:"▸ "; color:var(--muted);}
+  .formula[open] summary::before{content:"▾ "; color:var(--muted);}
+  .formula .fbody{padding:2px 16px 14px; color:var(--txt); line-height:1.75;}
+  .formula .eq{background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:9px 12px;
+               margin:8px 0 12px; font-family:Consolas,Menlo,monospace; color:#9ec5ff; font-size:.82rem;}
+  .formula ul{margin:6px 0; padding-left:20px;}
+  .formula li{margin:5px 0;}
+  .formula .w{color:var(--gold); font-weight:700;}
+  .formula .note{color:var(--muted); font-size:.78rem; margin-top:10px;}
+
   table{width:100%; border-collapse:collapse; background:var(--card);
     border-radius:12px; overflow:hidden; box-shadow:0 6px 30px rgba(0,0,0,.4);}
   thead th{background:#222d42; padding:11px 8px; font-size:.82rem; letter-spacing:.5px;
@@ -136,6 +150,19 @@
       <span><b>英超</b>=Premier League</span><span><b>西甲</b>=La Liga</span><span><b>義甲</b>=Serie A</span>
       <span><b>德甲</b>=Bundesliga</span><span><b>法甲</b>=Ligue 1</span>
     </div>
+    <details class="formula">
+      <summary>戰鬥力是怎麼算的？</summary>
+      <div class="fbody">
+        「戰鬥力」是把三個指標加權後換算成的 <b>0–100</b> 綜合分數。三項數值都先在 48 強之間做正規化（最強 = 100、最弱 = 0），再依下列權重相加後四捨五入：
+        <div class="eq">戰鬥力 = <span class="w">50%</span> × 總身價 ＋ <span class="w">30%</span> × 世界排名 ＋ <span class="w">20%</span> × 頂級球會球員數</div>
+        <ul>
+          <li><span class="w">50％　總身價</span>：全隊 26 人在 Transfermarkt 的市值總和，先<b>取對數</b>再正規化——避免少數超級豪門把分數拉到極端。</li>
+          <li><span class="w">30％　世界排名</span>：FIFA 世界排名，採<b>反轉</b>計分（排名越前、分數越高）。</li>
+          <li><span class="w">20％　頂級球會球員數</span>：效力於五大聯賽「各聯賽榜前 6 強球會」的球員人數，越多代表主力越集中在強隊。</li>
+        </ul>
+        <div class="note">分數越高代表整體實力越強。身價基準：Transfermarkt，2026 年 6 月中。</div>
+      </div>
+    </details>
     <table>
       <thead>
         <tr><th>排名</th><th style="text-align:left">國家隊</th><th>組</th><th>五大合計</th>
